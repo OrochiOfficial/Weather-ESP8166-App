@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <title>Odczyty DHT11</title>
+    <meta http-equiv="refresh" content="369" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      .pogoda_div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .slotDniaPogodyXD {
+        margin: 2em;
+        padding: 2em;
+        border: 1px solid #e7e7e7;
+        background-color: #f9f9f9;
+        background: linear-gradient(
+          to bottom right,
+          rgb(244, 244, 244),
+          rgb(205, 205, 205)
+        );
+        border-radius: 20px;
+        width: 15%;
+        text-align: center;
+      }
+    </style>
+
+    <script>
+      const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=Warsaw&appid=07f70f5c584e848bef42cb94acea7641&units=metric&lang=pl`;
+
+      async function getWeatherForecast() {
+        try {
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+          pokazPogodeProsze(data);
+        } catch (error) {
+          console.error("Błąd podczas pobierania danych:", error);
+        }
+      }
+
+      function pokazPogodeProsze(data) {
+        const forecastContainer = document.getElementById("pogoda_div");
+        forecastContainer.innerHTML = "";
+
+        const forecastList = data.list.filter((_, index) => index % 8 === 0);
+
+        forecastList.forEach((forecast) => {
+          const date = new Date(forecast.dt * 1000);
+          const day = date.toLocaleDateString("pl-PL", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          });
+          const temperature = forecast.main.temp.toFixed(1);
+          const description = forecast.weather[0].description;
+          const iconUrl = `http://openweathermap.org/img/wn/${forecast.weather[0].icon}.png`;
+
+          const forecastElement = document.createElement("div");
+          forecastElement.classList.add("slotDniaPogodyXD");
+          forecastElement.innerHTML = `
+                    <h3>${day}</h3>
+                    <p>${temperature} °C</p>
+                    <p>${description}</p>
+                    <img src="${iconUrl}" alt="${description}">
+                `;
+          forecastContainer.appendChild(forecastElement);
+        });
+      }
+
+      getWeatherForecast();
+    </script>
+  </head>
+  <body>
+    <h1>Stacja pogodowa</h1>
+    <h2>Tomasz Kotyla</h2>
+    <p style="font-size: larger; text-align: center">
+      Jedynie pokaz że działa API, bo nie udało się dodać tego do ESP-ka
+    </p>
+    <div class="pogoda_div" id="pogoda_div"></div>
+  </body>
+</html>
